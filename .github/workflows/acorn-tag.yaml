@@ -1,0 +1,25 @@
+name: Acorn Release
+on:
+  push:
+    tags:
+    - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: acorn-io/actions-setup@v2
+        with:
+          kubeconfig: "${{ secrets.KUBECONFIG }}"
+          acorn-init: false
+          acorn-version: main
+      - uses: acorn-io/actions-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and Push
+        run: |
+          TAG=${GITHUB_REF#refs/*/}
+          acorn build --push -t ghcr.io/${{ github.repository }}:$TAG .
